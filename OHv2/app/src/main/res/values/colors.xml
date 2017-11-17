@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#17767C</color>
+    <color name="colorPrimaryDark">#160F29</color>
+    <color name="colorAccent">#368F8B</color>
+
+    <color name="splash_screen_background_color">#160F29</color>
+    <color name="dialog_background_color">#F7F7F7</color>
+
+    <color name="button_bg_color">#17767C</color>
+    <color name="button_text_color">#F7F7F7</color>
+
+    <color name="home_bg_color">#160F29</color>
+    <color name="home_content_border_color">#368F8B</color>
+    <color name="home_content_header_text_color">#F7F7F7</color>
+    <color name="home_content_body_text_color">#F7F7F7</color>
+</resources>

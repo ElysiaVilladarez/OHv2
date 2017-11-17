@@ -1,0 +1,19 @@
+<resources>
+    <dimen name="dialog_rounded_corners_dp">20dp</dimen>
+    <dimen name="dialog_text_size_sp">14sp</dimen>
+    <dimen name="dialog_textview_minheight_size_dp">38dp</dimen>
+    <dimen name="dialog_padding">10dp</dimen>
+
+    <dimen name="button_text_size_sp">14sp</dimen>
+    <dimen name="button_rounded_corners_dp">7dp</dimen>
+    <dimen name="button_height_dp">35dp</dimen>
+
+    <dimen name="home_content_rounded_corners_dp">20dp</dimen>
+    <dimen name="home_content_border_width_dp">3dp</dimen>
+    <dimen name="home_content_header_size_sp">21sp</dimen>
+    <dimen name="home_content_body_size_sp">16sp</dimen>
+    <dimen name="home_padding">13dp</dimen>
+    <dimen name="home_header_margin">8dp</dimen>
+    <dimen name="home_body_margin">6dp</dimen>
+
+</resources>

@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">OOHANA</string>
+    <string name="title_activity_splash_screen">SplashScreenActivity</string>
+
+    <string name="turn_on_loc_mes">"Your GPS seems to be disabled. Kindly enable GPS and set it to High Accuracy."</string>
+    <string name="give_permissions">"OOHANA needs the necessary permissions to proceed."</string>
+</resources>
