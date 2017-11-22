@@ -1,6 +1,7 @@
 package com.oh.ohv2.helpers;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.provider.Settings;
@@ -10,19 +11,20 @@ import android.provider.Settings;
  */
 
 public class PermissionIntent {
-    private Activity act;
+    private Context c;
 
-    public PermissionIntent(Activity act){
-        this.act = act;
+    public PermissionIntent(Context c){
+        this.c = c;
     }
+
     public void changePermissionSettings(){
         Intent i = new Intent();
         i.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-        Uri uri = Uri.fromParts("package", act.getPackageName(), null);
+        Uri uri = Uri.fromParts("package", c.getPackageName(), null);
         i.setData(uri);
-        act.startActivity(i);
+        c.startActivity(i);
     }
     public void changeLocationSettings(){
-        act.startActivity(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+        c.startActivity(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
     }
 }

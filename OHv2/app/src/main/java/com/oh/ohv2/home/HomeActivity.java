@@ -2,6 +2,9 @@ package com.oh.ohv2.home;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.support.v7.app.AppCompatActivity;
@@ -24,6 +27,7 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.Home
     private Dialog alertDialogs;
     private TextView alertDialogMes;
     private Button alertOkButton;
+    private LocationUpdateUIReceiver receiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +48,9 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.Home
         lngText = (TextView)findViewById(R.id.locationLng);
         lastUpdated = (TextView)findViewById(R.id.updatedTime);
         geofenceNumText = (TextView)findViewById(R.id.geofencesActive);
+
+        receiver = new LocationUpdateUIReceiver();
+        homePresenter.registerReceiverToBroadcast(receiver);
     }
 
     @Override
@@ -81,10 +88,49 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.Home
     }
 
     @Override
+    public void setToHighAccuracy(String message) {
+        Log.d(Constants.LOG_TAG_HOME, "Switch location to high accuracy");
+        if(alertDialogMes != null && alertDialogs !=null && alertOkButton != null) {
+            alertDialogMes.setText(message);
+            alertOkButton.setOnClickListener(new View.OnClickListener() {
+
+                @Override
+                public void onClick(View v) {
+                    alertDialogs.dismiss();
+                    homePresenter.launchLocationSettings();
+                }
+            });
+            alertDialogs.show();
+        }
+    }
+
+    @Override
     public void onResume(){
         super.onResume();
         homePresenter.checkLocationProvider();
-        homePresenter.fetchGeofencesFromServer();
+        //TO DO also check permissions
+       // homePresenter.fetchGeofencesFromServer();
         homePresenter.connectToGoogleApi();
+    }
+
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        homePresenter.stopJob(Constants.SYNC_LOGS_TAG);
+    }
+
+    public class LocationUpdateUIReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(Constants.ACTION_UPDATE_LOC_UI.matches(intent.getAction())) {
+                Log.d(Constants.LOG_TAG_RECEIVER, "Location has been updated! Updating UI . . .");
+                String curLoc = intent.getStringExtra(Constants.LOC_CURR_LATLNG_KEY);
+                if(!curLoc.isEmpty()) {
+                    String[] latlng = curLoc.split(",");
+                    setLatLng(latlng[0], latlng[1]);
+                }
+            }
+        }
     }
 }

@@ -8,6 +8,7 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
 
     <application
         android:allowBackup="true"
@@ -28,7 +29,20 @@
 
         <activity android:name=".home.HomeActivity"/>
 
-        <receiver android:name="com.oh.ohv2.home.GeofenceTriggeredReceiver"
+        <service
+            android:exported="false"
+            android:name=".services.SyncLogsService">
+            <intent-filter>
+                <action android:name="com.firebase.jobdispatcher.ACTION_EXECUTE"/>
+            </intent-filter>
+        </service>
+
+        <service
+            android:exported="false"
+            android:name=".services.LocationUpdatesService">
+        </service>
+
+        <receiver android:name="com.oh.ohv2.services.GeofenceTriggeredReceiver"
             android:enabled="true"
             android:exported="false"
             android:permission="android.permission.RECEIVE_BOOT_COMPLETED" >
@@ -37,7 +51,7 @@
                 <action android:name="android.location.PROVIDERS_CHANGED" />
                 <action android:name="android.location.MODE_CHANGED" />
                 <action android:name="com.oh.ohv2.ACTION_GEOFENCE_TRIGGERED"/>
-                <action android:name="com.oh.ohv2.ACTION_SYNC_LOGS"/>
+                <action android:name="com.oh.ohv2.ACTION_UPDATE_LOC_UI"/>
                 <action android:name="com.oh.ohv2.ACTION_FETCH_GEOFENCES"/>
             </intent-filter>
         </receiver>

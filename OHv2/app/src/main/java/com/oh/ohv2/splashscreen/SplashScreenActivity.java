@@ -91,7 +91,8 @@ public class SplashScreenActivity extends AppCompatActivity implements SplashScr
                 @Override
                 public void onClick(View v) {
                     alertDialogs.dismiss();
-                    splashScreenPresenter.changePermissions();
+                    finish();
+                    //splashScreenPresenter.changePermissions();
                 }
             });
 

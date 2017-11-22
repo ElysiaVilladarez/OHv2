@@ -7,14 +7,13 @@ import android.content.Intent;
 import android.os.Build;
 import android.util.Log;
 
-import com.oh.ohv2.home.GeofenceTriggeredReceiver;
+import com.oh.ohv2.services.GeofenceTriggeredReceiver;
 
 /**
  * Created by elysi on 10/30/2017.
  */
 
 public class Alarms {
-    private AlarmManager alarmManager;
     private Context c;
     public Alarms(Context c){
         this.c = c;

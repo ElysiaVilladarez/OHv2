@@ -3,8 +3,10 @@ package com.oh.ohv2.home;
 import android.Manifest;
 import android.app.Activity;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
@@ -12,12 +14,12 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.Geofence;
@@ -31,7 +33,10 @@ import com.oh.ohv2.api.RetrofitService;
 import com.oh.ohv2.database.ServerGeofence;
 import com.oh.ohv2.helpers.Alarms;
 import com.oh.ohv2.helpers.Constants;
+import com.oh.ohv2.helpers.FirebaseDispatchers;
 import com.oh.ohv2.helpers.PermissionIntent;
+import com.oh.ohv2.services.GeofenceTriggeredReceiver;
+import com.oh.ohv2.services.LocationUpdatesService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,6 +57,7 @@ public class HomePresenter implements HomeContract.HomePresenterToModel, HomeCon
     private Activity act;
     private PermissionIntent pi;
     private Alarms alarms;
+    private FirebaseDispatchers fd;
     private Retrofit retrofitApi;
     private RetrofitService getService;
     private GoogleApiClient googleApiClient;
@@ -64,13 +70,16 @@ public class HomePresenter implements HomeContract.HomePresenterToModel, HomeCon
         homeModel = new HomeModel();
 
         homeModel.instantiateRealm(homeView.getActivity().getApplicationContext());
-        pi = new PermissionIntent(act);
+        pi = new PermissionIntent(act.getApplicationContext());
         alarms = new Alarms(act.getApplicationContext());
+        fd = new FirebaseDispatchers(act.getApplication());
 
-        alarms.setAlarms(Constants.ACTION_FETCH_GEOFENCES, Constants.FETCH_PENDING_INTENT_ID, Constants.FETCH_LOGS_TIME);
-        alarms.setAlarms(Constants.ACTION_SYNC_LOGS, Constants.SYNC_PENDING_INTENT_ID, Constants.SYNC_LOGS_TIME);
+//        alarms.setAlarms(Constants.ACTION_FETCH_GEOFENCES, Constants.FETCH_PENDING_INTENT_ID, Constants.FETCH_LOGS_TIME);
+//        alarms.setAlarms(Constants.ACTION_SYNC_LOGS, Constants.SYNC_PENDING_INTENT_ID, Constants.SYNC_LOGS_TIME);
+        fd.scheduleJob(Constants.SYNC_LOGS_TAG, true, Constants.SYNC_LOGS_TIME_MIN, true);
 
         createLocationRequest();
+
         if (retrofitApi == null) {
             retrofitApi = new Retrofit.Builder()
                     .baseUrl(Constants.BASE_URL)
@@ -84,6 +93,11 @@ public class HomePresenter implements HomeContract.HomePresenterToModel, HomeCon
         if(homeModel.getServerGeofenceCount() > 0){
             connectToGoogleApi();
         }
+    }
+
+    @Override
+    public void registerReceiverToBroadcast(BroadcastReceiver receiver){
+        LocalBroadcastManager.getInstance(act).registerReceiver(receiver, new IntentFilter(Constants.ACTION_UPDATE_LOC_UI));
     }
 
     @Override
@@ -102,7 +116,7 @@ public class HomePresenter implements HomeContract.HomePresenterToModel, HomeCon
         Log.d(Constants.LOG_TAG_HOME, "Check location provider");
         LocationManager manager = (LocationManager) act.getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
         if (!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            if(homeView != null) homeView.askToTurnOnLocation(act.getString(R.string.turn_on_loc_mes));
+            homeView.askToTurnOnLocation(act.getString(R.string.turn_on_loc_mes));
         }
     }
 
@@ -114,8 +128,9 @@ public class HomePresenter implements HomeContract.HomePresenterToModel, HomeCon
             public void onResponse(Call<GeofenceList> call, Response<GeofenceList> response) {
                 Log.d(Constants.LOG_TAG_HOME, "Getting geofence list successful: " + response.body().getGeofenceList.size() + " items");
                 List<ServerGeofence> result = response.body().getGeofenceList;
+                homeModel.deleteGeofences();
                 homeModel.addServerGeofences(result);
-                if(homeView != null) homeView.setGeofencesActive(Integer.toString(result.size()));
+                homeView.setGeofencesActive(Integer.toString(result.size()));
                 connectToGoogleApi();
             }
 
@@ -128,15 +143,15 @@ public class HomePresenter implements HomeContract.HomePresenterToModel, HomeCon
 
     //Connect to Google Play services
     public void connectToGoogleApi() {
-        Log.d(Constants.LOG_TAG_HOME, "Building Google API . . .");
         if (googleApiClient == null) {
+            Log.d(Constants.LOG_TAG_HOME, "Building Google API . . .");
             googleApiClient = new GoogleApiClient.Builder(act)
                     .addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
                         @Override
                         public void onConnected(@Nullable Bundle bundle) {
-                            Log.d(Constants.LOG_TAG_HOME, "Google API connected");
+                            Log.d(Constants.LOG_TAG_HOME, "Google API connected!");
                             if (homeModel.getServerGeofenceCount() > 0) {
-                                if(homeView !=null) homeView.setGeofencesActive(Integer.toString(homeModel.getServerGeofenceCount()));
+                                homeView.setGeofencesActive(Integer.toString(homeModel.getServerGeofenceCount()));
                                 startLocationUpdates();
                                 startGeofencing();
                             }
@@ -158,13 +173,19 @@ public class HomePresenter implements HomeContract.HomePresenterToModel, HomeCon
                     .addApi(LocationServices.API).build();
 
         } else if (googleApiClient != null && !googleApiClient.isConnected() && !googleApiClient.isConnecting()) {
+            Log.d(Constants.LOG_TAG_HOME, "Reconnecting Google API . . .");
             googleApiClient.connect();
         }
     }
 
     @Override
-    public void startSyncTimer() {
-        alarms.setAlarms(Constants.ACTION_SYNC_LOGS, Constants.SYNC_PENDING_INTENT_ID, Constants.SYNC_LOGS_TIME);
+    public void launchLocationSettings() {
+        pi.changeLocationSettings();
+    }
+
+    @Override
+    public void stopJob(String tag) {
+        fd.cancelJob(tag);
     }
 
     //Get location
@@ -172,6 +193,7 @@ public class HomePresenter implements HomeContract.HomePresenterToModel, HomeCon
         locationRequest = new LocationRequest();
         locationRequest.setInterval(Constants.LOC_UPDATE_INTERVAL);
         locationRequest.setFastestInterval(Constants.LOC_UPDATE_FASTEST_INTERVAL);
+       // locationRequest.setSmallestDisplacement(0);
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
 
@@ -181,13 +203,22 @@ public class HomePresenter implements HomeContract.HomePresenterToModel, HomeCon
             Log.d(Constants.LOG_TAG_HOME, "Starting location updates . . .");
             if (ActivityCompat.checkSelfPermission(act, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                     ActivityCompat.checkSelfPermission(act, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                if(homeView != null) homeView.askToTurnOnLocation(act.getString(R.string.turn_on_loc_mes));
+                homeView.askToTurnOnLocation(act.getString(R.string.turn_on_loc_mes));
             } else {
                 Location location = LocationServices.FusedLocationApi.getLastLocation(
                         googleApiClient);
-                if(homeView != null && location != null) homeView.setLatLng(String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()));
-                LocationServices.FusedLocationApi.requestLocationUpdates(
-                        googleApiClient, locationRequest, this);
+
+                Intent locationUpdatesIntent = new Intent(act, LocationUpdatesService.class);
+                if(location != null) {
+                    homeView.setLatLng(String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()));
+                    homeModel.setLocationDifference(location);
+                    locationUpdatesIntent.addCategory(Double.toString(location.getLatitude()) + ","+ Double.toString(location.getLongitude()));
+                }
+//                LocationServices.FusedLocationApi.requestLocationUpdates(
+//                        googleApiClient, locationRequest, this);
+                PendingIntent locationUpdatesPendingIntent = PendingIntent.getService(act.getApplicationContext(), Constants.FETCH_PENDING_INTENT_ID,
+                        locationUpdatesIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, locationUpdatesPendingIntent);
             }
         }
     }
@@ -199,9 +230,9 @@ public class HomePresenter implements HomeContract.HomePresenterToModel, HomeCon
 
     @Override
     public void onLocationChanged(Location location) {
-        Log.d(Constants.LOG_TAG_HOME, "Location changed update . . .");
-        if(homeView !=null) homeView.setLatLng(String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()));
-        homeModel.setLocationDifference(location);
+//        Log.d(Constants.LOG_TAG_HOME, "Location changed update . . .");
+//        homeView.setLatLng(String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()));
+//        homeModel.setLocationDifference(location);
     }
 
     //Geofence methods
@@ -218,18 +249,19 @@ public class HomePresenter implements HomeContract.HomePresenterToModel, HomeCon
             geofencingRequestBuilder = new GeofencingRequest.Builder()
                     .setInitialTrigger(Constants.GEOFENCE_INITIAL_TRIGGER);
         }
-        for (Geofence g: gL) {
-            geofencingRequestBuilder.addGeofence(g);
-        }
+        geofencingRequestBuilder.addGeofences(gL);
+
 
     }
 
     protected void activateGeofencingApi() {
         Intent geofenceIntent = new Intent(act.getApplicationContext(), GeofenceTriggeredReceiver.class);
         geofenceIntent.setAction(Constants.ACTION_GEOFENCE_TRIGGERED);
-        PendingIntent geofencePendingIntent = PendingIntent.getBroadcast(act.getApplicationContext(), Constants.GEOFENCE_PENDING_INTENT_ID, geofenceIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent geofencePendingIntent = PendingIntent.getBroadcast(act.getApplicationContext(), Constants.GEOFENCE_PENDING_INTENT_ID,
+                geofenceIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
         if (ActivityCompat.checkSelfPermission(act, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            if(homeView != null) homeView.askToTurnOnLocation(act.getString(R.string.turn_on_loc_mes));
+            homeView.askToTurnOnLocation(act.getString(R.string.turn_on_loc_mes));
             return;
         }
         LocationServices.GeofencingApi.addGeofences(googleApiClient, geofencingRequestBuilder.build(), geofencePendingIntent)
@@ -238,12 +270,11 @@ public class HomePresenter implements HomeContract.HomePresenterToModel, HomeCon
                     public void onResult(Status status) {
                         if (status.isSuccess()) {
                             Log.d(Constants.LOG_TAG_HOME, "Geofences successfully added!");
-                            Toast.makeText(act.getApplicationContext(), "Geofences have been successfully activated!", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(act.getApplicationContext(), "Geofences have been activated!", Toast.LENGTH_SHORT).show();
 
                         } else if (status.getStatusCode() == 1000) {
                             Log.d(Constants.LOG_TAG_HOME, "Error adding geofences: " + status.getStatusCode() + ":" + status.getStatusMessage());
-                            Toast.makeText(act.getApplicationContext(), "Please turn on Google Location services in Settings. Switch to \"High Accuracy\" mode", Toast.LENGTH_LONG).show();
-
+                            homeView.setToHighAccuracy(act.getString(R.string.switch_to_high_mes));
                         } else {
                             Log.d(Constants.LOG_TAG_HOME, "Error adding geofences: " + status.getStatusCode() + ":" + status.getStatusMessage());
                             Toast.makeText(act.getApplicationContext(), "Error status code: " + status.getStatusCode(), Toast.LENGTH_LONG).show();

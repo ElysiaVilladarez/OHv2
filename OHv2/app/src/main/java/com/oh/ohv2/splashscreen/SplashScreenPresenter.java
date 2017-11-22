@@ -47,7 +47,7 @@ public class SplashScreenPresenter implements SplashScreenContract.SplashScreenP
     public SplashScreenPresenter(SplashScreenContract.SplashScreenViewToPresenter sSV) {
         splashScreenView = sSV;
         this.act = splashScreenView.getActivity();
-        pi = new PermissionIntent(act);
+        pi = new PermissionIntent(act.getApplicationContext());
     }
 
     public void createWeakActivity() {
