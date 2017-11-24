@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.oh.ohv2">
+    package="com.oohana">
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
@@ -27,7 +27,8 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".home.HomeActivity"/>
+        <activity android:name=".home.HomeActivity"
+            android:launchMode="singleInstance"/>
 
         <service
             android:exported="false"
@@ -42,7 +43,7 @@
             android:name=".services.LocationUpdatesService">
         </service>
 
-        <receiver android:name="com.oh.ohv2.services.GeofenceTriggeredReceiver"
+        <receiver android:name="com.oohana.services.GeofenceTriggeredReceiver"
             android:enabled="true"
             android:exported="false"
             android:permission="android.permission.RECEIVE_BOOT_COMPLETED" >

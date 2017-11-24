@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:gravity="center"
     android:background="@color/home_bg_color"
-    tools:context="com.oh.ohv2.home.HomeActivity">
+    tools:context="com.oohana.home.HomeActivity">
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="wrap_content"
@@ -28,15 +28,16 @@
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/home_body_margin"
             android:orientation="vertical">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:gravity="center"
-            android:textColor="@color/home_content_body_text_color"
-            android:textStyle="bold"
-            android:textSize="@dimen/home_content_body_size_sp"
-            android:text="Latitude"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:gravity="center"
+                android:text="Latitude"
+                android:textColor="@color/home_content_body_text_color"
+                android:textSize="@dimen/home_content_body_size_sp"
+                android:textStyle="bold" />
             <TextView
                 android:id="@+id/locationLat"
                 android:layout_width="wrap_content"

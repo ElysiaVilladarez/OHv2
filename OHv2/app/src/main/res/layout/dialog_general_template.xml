@@ -15,7 +15,8 @@
         android:minHeight="@dimen/dialog_textview_minheight_size_dp"
         android:layout_gravity="top|center_horizontal"
         android:gravity="center"
-        android:textSize="@dimen/dialog_text_size_sp" />
+        android:textSize="@dimen/dialog_text_size_sp"
+        android:layout_marginBottom="15dp" />
 
     <Button
         android:id="@+id/ok_button"
@@ -25,5 +26,6 @@
         android:layout_below="@+id/message"
         android:text="OK"
         android:layout_centerHorizontal="true"
+        android:layout_marginBottom="15dp"
         style="@style/AppButtonStyle" />
 </RelativeLayout>

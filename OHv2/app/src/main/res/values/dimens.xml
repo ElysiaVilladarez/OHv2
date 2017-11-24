@@ -1,7 +1,7 @@
 <resources>
     <dimen name="dialog_rounded_corners_dp">20dp</dimen>
-    <dimen name="dialog_text_size_sp">14sp</dimen>
-    <dimen name="dialog_textview_minheight_size_dp">38dp</dimen>
+    <dimen name="dialog_text_size_sp">18sp</dimen>
+    <dimen name="dialog_textview_minheight_size_dp">50dp</dimen>
     <dimen name="dialog_padding">10dp</dimen>
 
     <dimen name="button_text_size_sp">14sp</dimen>

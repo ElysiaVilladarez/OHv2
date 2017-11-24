@@ -5,4 +5,6 @@
     <string name="turn_on_loc_mes">"Your GPS seems to be disabled. Kindly enable GPS and set it to High Accuracy."</string>
     <string name="give_permissions">"OOHANA needs the necessary permissions to proceed."</string>
     <string name="switch_to_high_mes">"Kindly switch GPS settings to High Accuracy."</string>
+    <string name="confirm_stop_logs_mes">"Are you sure you want to stop the logs?"</string>
+    <string name="connect_to_internet_mes">"OOHANA needs to get the geofences from the server. Kindly connect to the internet."</string>
 </resources>
