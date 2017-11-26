@@ -9,16 +9,16 @@ import io.realm.RealmObject;
  */
 
 public class GeofenceLog extends RealmObject {
-    private ServerGeofence triggeredGeofence;
+    private int id;
     private String status;
     private Date timeStamp;
 
-    public ServerGeofence getTriggeredGeofence() {
-        return triggeredGeofence;
+    public int getId() {
+        return id;
     }
 
-    public void setTriggeredGeofence(ServerGeofence triggeredGeofence) {
-        this.triggeredGeofence = triggeredGeofence;
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getStatus() {

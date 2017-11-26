@@ -3,23 +3,33 @@ package com.oohana.services;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofenceStatusCodes;
 import com.google.android.gms.location.GeofencingEvent;
 import com.oohana.R;
+import com.oohana.api.RetrofitService;
 import com.oohana.helpers.Constants;
 import com.oohana.helpers.DialogConfirmCreator;
 import com.oohana.helpers.PermissionIntent;
+import com.oohana.helpers.SyncLogsToServer;
 import com.oohana.home.HomeContract;
 import com.oohana.home.HomeModel;
+import com.oohana.home.TransparentActDialog;
 
 import java.util.List;
+
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
  * Created by elysi on 10/30/2017.
@@ -31,6 +41,8 @@ public class GeofenceTriggeredReceiver extends BroadcastReceiver {
 
         final HomeContract.HomeModelToPresenter homeModel = new HomeModel();
         homeModel.instantiateRealm(context);
+
+
 
         //Geofences have been triggered
         if(Constants.ACTION_GEOFENCE_TRIGGERED.equals(intent.getAction())) {
@@ -50,33 +62,46 @@ public class GeofenceTriggeredReceiver extends BroadcastReceiver {
                 homeModel.addLogs(geoFenceTransition, triggeringGeofences);
                 Log.d(Constants.LOG_TAG_RECEIVER, "Status: " + geoFenceTransition + " ~ " + TextUtils.join(", ", triggeringGeofences));
             }
-        } else if(Constants.ACTION_PROVIDERS_CHANGED.equals(intent.getAction())){
+        }
+        if(Constants.ACTION_PROVIDERS_CHANGED.equals(intent.getAction())){
             LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+            Intent geoIntent = new Intent();
             if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
                 // show dialog asking to turn on gps for oohana
-                final DialogConfirmCreator dialog = new DialogConfirmCreator(context);
-                dialog.setAlertDialogMes(context.getString(R.string.turn_on_loc_mes));
-                dialog.setAlertOkButtonClick(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        PermissionIntent pi = new PermissionIntent(context);
-                        dialog.dismissDialog();
-                        pi.changeLocationSettings();
-                    }
-                });
-                dialog.setAlertCancelButtonClick(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        dialog.dismissDialog();
-                    }
-                });
+                Log.d(Constants.LOG_TAG_RECEIVER, "GPS is off");
+                geoIntent.setAction(Constants.ACTION_GPS_OFF);
+                context.sendBroadcast(geoIntent);
             }else{
                 //set up geofences again
-                Intent geoIntent = new Intent();
-                LocalBroadcastManager.getInstance(context).sendBroadcast(geoIntent.setAction(Constants.ACTION_PROVIDERS_CHANGED));
+                geoIntent.setAction(Constants.ACTION_GPS_ON);
+                context.sendBroadcast(geoIntent);
                 Log.d(Constants.LOG_TAG_HOME, "GPS turned on.");
             }
-        } else if(Constants.ACTION_FETCH_GEOFENCES.equals(intent.getAction())){
+        }
+        if(Constants.ACTION_STATE_CHANGED.equals(intent.getAction()) || Constants.ACTION_WIFI_STATE_CHANGED.equals(intent.getAction())
+                || ConnectivityManager.CONNECTIVITY_ACTION.equals(intent.getAction())){
+            NetworkInfo ni = (NetworkInfo) intent.getExtras().get(
+                    ConnectivityManager.EXTRA_NETWORK_INFO);
+            if (ni != null && ni.getState() == NetworkInfo.State.CONNECTED) {
+                Log.d(Constants.LOG_TAG_RECEIVER, "There is internet connection!");
+                SharedPreferences pref = context.getSharedPreferences(Constants.PREFS_NAME, Context.MODE_PRIVATE);
+                boolean hasSyncedBefore = pref.getBoolean(Constants.SHARED_PREF_HAS_SYNCED_BEFORE_KEY, true);
+                if(hasSyncedBefore) {
+                    Log.d(Constants.LOG_TAG_RECEIVER, "Syncing has been attempted before! Sync now");
+                    Retrofit retrofitApi = new Retrofit.Builder()
+                            .baseUrl(Constants.BASE_URL)
+                            .addConverterFactory(GsonConverterFactory.create())
+                            .build();
+
+                    RetrofitService getService = retrofitApi.create(RetrofitService.class);
+                    SyncLogsToServer.syncLogs(getService, homeModel);
+                }
+            } else{
+                Log.d(Constants.LOG_TAG_RECEIVER, "There is no internet connection!");
+            }
+        }
+
+        if(Constants.ACTION_FETCH_GEOFENCES.equals(intent.getAction())){
             Log.d(Constants.LOG_TAG_RECEIVER, "Fetching newly added geofences from server . . .");
 //            homePresenter.fetchGeofencesFromServer();
 //            homePresenter.connectToGoogleApi();

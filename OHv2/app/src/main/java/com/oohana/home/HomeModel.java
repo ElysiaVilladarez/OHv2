@@ -47,8 +47,10 @@ public class HomeModel implements HomeContract.HomeModelToPresenter {
             public void execute(Realm realm) {
                 RealmResults<ServerGeofence> rr  = realm.where(ServerGeofence.class).findAllSorted("nearness", Sort.ASCENDING);
                 if (rr != null) {
-                    if(rr.size() > 97) rr.subList(0, 97);
-                    for (ServerGeofence g: rr) {
+                    List<ServerGeofence> list;
+                    if(rr.size() > 97) list = rr.subList(0, 97);
+                    else list = rr;
+                    for (ServerGeofence g: list) {
                         geofences.add(hm.createGeofence(Integer.toString(g.getGeofId()), g.getGeofLat(), g.getGeofLng(), g.getGeofRad()));
                     }
                 }
@@ -102,7 +104,7 @@ public class HomeModel implements HomeContract.HomeModelToPresenter {
             public void execute(Realm realm) {
                 for(Geofence g: geofences){
                     GeofenceLog tg = new GeofenceLog();
-                    tg.setTriggeredGeofence(realm.where(ServerGeofence.class).equalTo("geofId", Integer.parseInt(g.getRequestId())).findFirst());
+                    tg.setId(Integer.parseInt(g.getRequestId()));
                     tg.setStatus(hm.getStatus(geofenceTransition));
                     tg.setTimeStamp(Calendar.getInstance().getTime());
                     realm.insert(tg);
@@ -123,13 +125,22 @@ public class HomeModel implements HomeContract.HomeModelToPresenter {
                 RealmResults<GeofenceLog> rr  = realm.where(GeofenceLog.class).findAll();
                 if (rr != null) {
                     for (GeofenceLog s: rr) {
-                        logs.add(new TriggeredLogs(s.getTriggeredGeofence().getGeofId(), s.getStatus(), s.getTimeStamp()));
+                        logs.add(new TriggeredLogs(s.getId(), s.getStatus(), s.getTimeStamp()));
                     }
                 }
             }
         });
         realm.close();
         return logs;
+    }
+
+    @Override
+    public int getLogCount() {
+        int count;
+        Realm realm = Realm.getDefaultInstance();
+        count = realm.where(GeofenceLog.class).findAll().size();
+        realm.close();
+        return count;
     }
 
     @Override

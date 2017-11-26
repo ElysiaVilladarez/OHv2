@@ -2,13 +2,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.oohana">
 
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:allowBackup="true"
@@ -17,45 +17,59 @@
         android:roundIcon="@mipmap/oohana_icon"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar">
-
-        <activity
-            android:name=".splashscreen.SplashScreenActivity" >
+        <activity android:name=".splashscreen.SplashScreenActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <activity android:name=".home.HomeActivity"
-            android:launchMode="singleInstance"/>
+        <activity
+            android:name=".home.HomeActivity"
+            android:launchMode="singleInstance" />
 
         <service
-            android:exported="false"
-            android:name=".services.SyncLogsService">
+            android:name=".services.SyncLogsService"
+            android:exported="false">
             <intent-filter>
-                <action android:name="com.firebase.jobdispatcher.ACTION_EXECUTE"/>
+                <action android:name="com.firebase.jobdispatcher.ACTION_EXECUTE" />
             </intent-filter>
         </service>
-
         <service
-            android:exported="false"
-            android:name=".services.LocationUpdatesService">
-        </service>
+            android:name=".services.LocationUpdatesService"
+            android:exported="false"/>
 
-        <receiver android:name="com.oohana.services.GeofenceTriggeredReceiver"
+        <receiver
+            android:name=".services.GeofenceTriggeredReceiver"
             android:enabled="true"
             android:exported="false"
-            android:permission="android.permission.RECEIVE_BOOT_COMPLETED" >
+            android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.location.PROVIDERS_CHANGED" />
                 <action android:name="android.location.MODE_CHANGED" />
-                <action android:name="com.oh.ohv2.ACTION_GEOFENCE_TRIGGERED"/>
-                <action android:name="com.oh.ohv2.ACTION_UPDATE_LOC_UI"/>
-                <action android:name="com.oh.ohv2.ACTION_FETCH_GEOFENCES"/>
+                <action android:name="android.net.wifi.WIFI_STATE_CHANGED"/>
+                <action android:name="android.net.wifi.STATE_CHANGE"/>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+                <action android:name="com.oh.ohv2.ACTION_GEOFENCE_TRIGGERED" />
+                <action android:name="com.oh.ohv2.ACTION_UPDATE_LOC_UI" />
+                <action android:name="com.oh.ohv2.ACTION_FETCH_GEOFENCES" />
             </intent-filter>
         </receiver>
+
+        <receiver
+            android:name=".home.HomeActivity$LocationUpdateUIReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="action.ACTION_GPS_ON" />
+                <action android:name="action.ACTION_GPS_OFF" />
+            </intent-filter>
+        </receiver>
+
+        <activity android:name=".home.TransparentActDialog"
+            android:launchMode="singleInstance"
+            android:theme="@style/Theme.Transparent"/>
     </application>
 
 </manifest>

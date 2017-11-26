@@ -27,13 +27,13 @@ import com.oohana.helpers.DialogConfirmCreator;
 import java.util.Calendar;
 
 public class HomeActivity extends AppCompatActivity implements HomeContract.HomeViewToPresenter {
-    private HomeContract.HomePresenterToView homePresenter;
-    private TextView latText, lngText, lastUpdated, geofenceNumText;
+    private static HomeContract.HomePresenterToView homePresenter;
+    private static TextView latText, lngText, lastUpdated, geofenceNumText;
     private Dialog alertDialogs;
     private TextView alertDialogMes;
     private Button alertOkButton;
     private LocationUpdateUIReceiver receiver;
-    private SharedPreferences prefs;
+    private static SharedPreferences prefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +41,7 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.Home
         setContentView(R.layout.activity_home);
         homePresenter = new HomePresenter(this);
 
+        prefs = getSharedPreferences(Constants.PREFS_NAME, MODE_PRIVATE);
         alertDialogs = new Dialog(this);
         alertDialogs.requestWindowFeature(Window.FEATURE_NO_TITLE);
         alertDialogs.setContentView(R.layout.dialog_general_template);
@@ -104,6 +105,13 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.Home
 
     @Override
     public void setLatLng(String lat, String lng) {
+        latText.setText(lat);
+        lngText.setText(lng);
+        lastUpdated.setText(Constants.LAST_UPDATED_FORMAT.format(Calendar.getInstance().getTime()));
+    }
+
+
+    public static void setLatLngStatic(String lat, String lng) {
         latText.setText(lat);
         lngText.setText(lng);
         lastUpdated.setText(Constants.LAST_UPDATED_FORMAT.format(Calendar.getInstance().getTime()));
@@ -242,32 +250,41 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.Home
     @Override
     public void onDestroy(){
         super.onDestroy();
-//        homePresenter.stopJob(Constants.SYNC_LOGS_TAG);
-//        homePresenter.stopLocationUpdates();
-//        homePresenter.unregisterReceiver(receiver);
-//        homePresenter.stopService();
+        //homePresenter.stopJob(Constants.SYNC_LOGS_TAG);
+        //homePresenter.stopLocationUpdates();
+        homePresenter.unregisterReceiver(receiver);
+        homePresenter.removeAllGeofences();
+        //homePresenter.stopService();
     }
 
-    public class LocationUpdateUIReceiver extends BroadcastReceiver {
+    public static class LocationUpdateUIReceiver extends BroadcastReceiver {
 
         @Override
         public void onReceive(Context context, Intent intent) {
             if(Constants.ACTION_UPDATE_LOC_UI.equals(intent.getAction())) {
                 Log.d(Constants.LOG_TAG_RECEIVER, "Location has been updated! Updating UI . . .");
 
-                prefs = getSharedPreferences(Constants.PREFS_NAME, MODE_PRIVATE);
                 String curLoc = prefs.getString(Constants.LOC_CURR_LATLNG_KEY, "");
                 if (!curLoc.isEmpty()) {
                     String[] latlng = curLoc.split(",");
-                    setLatLng(latlng[0], latlng[1]);
+                    setLatLngStatic(latlng[0], latlng[1]);
                 }
                 if(intent.getBooleanExtra(Constants.HAS_SIG_LOC_CHANGE_KEY, false)){
-                    homePresenter.removeAllGeofences();
-                    homePresenter.connectToGoogleApi();
+                    if(homePresenter !=null) {
+                        homePresenter.removeAllGeofences();
+                        homePresenter.connectToGoogleApi();
+                    }
                 }
-            } else if(Constants.ACTION_PROVIDERS_CHANGED.equals(intent.getAction())){
-                homePresenter.checkGeofencesContent();
-                Log.d(Constants.LOG_TAG_RECEIVER, "Restarting geofences . . .");
+            }else if(Constants.ACTION_GPS_ON.equals(intent.getAction())){
+                if(homePresenter != null) {
+                    Log.d(Constants.LOG_TAG_RECEIVER, "Restarting geofences . . .");
+                    homePresenter.checkGeofencesContent();
+                }
+            } else if(Constants.ACTION_GPS_OFF.equals(intent.getAction())){
+                if(homePresenter != null) {
+                    Log.d(Constants.LOG_TAG_RECEIVER, "Removing geofences . . .");
+                    homePresenter.gpsOffAction();
+                }
             }
         }
     }

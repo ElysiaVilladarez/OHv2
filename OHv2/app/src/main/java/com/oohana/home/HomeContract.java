@@ -38,6 +38,7 @@ public interface HomeContract {
         void checkLocationProvider();
         void permissionDenied();
         void fetchGeofencesFromServer();
+        void syncLogsToServerAsync();
         void connectToGoogleApi();
         void launchLocationSettings();
         void stopJob(String tag);
@@ -46,6 +47,7 @@ public interface HomeContract {
         void unregisterReceiver(BroadcastReceiver receiver);
         void stopService();
         void removeAllGeofences();
+        void gpsOffAction();
     }
 
     //Presenter to Model
@@ -63,6 +65,7 @@ public interface HomeContract {
         void setLocationDifference(Location location);
         void addLogs(int geofenceTransition, List<Geofence> geofences);
         ArrayList<TriggeredLogs> getLogs();
+        int getLogCount();
         void deleteLogs();
         void deleteGeofences();
     }

@@ -22,13 +22,13 @@ public class HelperMethods {
     public String getStatus(int geofenceTransition) {
         String status;
         if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER) {
-            status = "Entering ";
+            status = "ENTERING ";
         } else if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_DWELL) {
-            status = "Dwelling ";
+            status = "DWELLING";
         } else if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT) {
-            status = "Exiting ";
+            status = "EXITING";
         }else{
-            status = "Normal";
+            status = "NORMAL";
         }
         return status;
     }

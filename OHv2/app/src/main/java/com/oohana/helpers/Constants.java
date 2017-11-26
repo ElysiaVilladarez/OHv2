@@ -3,12 +3,16 @@ package com.oohana.helpers;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.util.Log;
 
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingRequest;
 
 import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Created by elysi on 10/28/2017.
@@ -22,6 +26,7 @@ public class Constants {
     public final static String LOG_TAG_ALARMS = "ALARMS";
     public final static String LOG_TAG_JOB = "FIREBASE_JOB";
     public final static String LOG_TAG_LOCATIONSERVICE = "LOCATION_SERVICE";
+    public final static String LOG_TAG_TRANS_DIALOG = "TRANS_DIALOG";
 
 
     public final static int LOC_REQ_PERMISSIONS_ID = 100;
@@ -56,8 +61,11 @@ public class Constants {
     public static final long FETCH_LOGS_TIME = 1000 * 60 * 25;
 
     public final static String SYNC_LOGS_TAG = "SYNC_LOGS_TAG";
-    public static final int SYNC_LOGS_TIME_MIN = 1000 * 60 * 60 * 2;
+    public static final int SYNC_LOGS_TIME_MIN = 60 * 60 * 2; //2 hours
     public static final int FETCH_LOGS_TIME_MIN = 60 * 25;
+
+    public static final String SHARED_PREF_HAS_SYNCED_BEFORE_KEY = "HAS_ATTEMPTED_SYNCED";
+    public static final String SHARED_PREF_HAS_FETCHED_BEFORE_KEY = "HAS_ATTEMPTED_FETCHING";
 
     public static final String ACTION_GEOFENCE_TRIGGERED = "com.oohana.ohv2.ACTION_GEOFENCE_TRIGGERED";
     public static final String ACTION_SYNC_LOGS = "com.oohana.ohv2.ACTION_SYNC_LOGS";
@@ -65,6 +73,11 @@ public class Constants {
     public final static String ACTION_UPDATE_LOC_UI = "com.oohana.ohv2.ACTION_UPDATE_LOC_UI";
     public final static String ACTION_PROVIDERS_CHANGED = "android.location.PROVIDERS_CHANGED";
     public final static String ACTION_STOP_SERVICE = "action.STOP_SERVICE";
+    public final static String ACTION_GPS_OFF = "action.ACTION_GPS_OFF";
+    public final static String ACTION_GPS_ON = "action.ACTION_GPS_ON";
+    public final static String ACTION_WIFI_STATE_CHANGED = "android.net.wifi.WIFI_STATE_CHANGED";
+    public final static String ACTION_STATE_CHANGED = "android.net.wifi.STATE_CHANGE";
+
 
     public final static String NOTIFICATION_TITLE = "OOHANA";
     public final static String NOTIFICATION_CONTENT_TEXT = "OOHANA is logging your location . . .";
@@ -74,6 +87,7 @@ public class Constants {
 
 
     public static final SimpleDateFormat LAST_UPDATED_FORMAT = new SimpleDateFormat("MMM. dd yyyy, EEE, h:mm a");
+    public final static SimpleDateFormat SYNC_SERVER_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     public static boolean isInternetAvailable(Context c) {
         ConnectivityManager manager = (ConnectivityManager) c.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -84,5 +98,24 @@ public class Constants {
             isAvailable = true;
         }
         return isAvailable;
+    }
+
+    public static String getMACAddress(String interfaceName) {
+        try {
+            List<NetworkInterface> interfaces = Collections.list(NetworkInterface.getNetworkInterfaces());
+            for (NetworkInterface intf : interfaces) {
+                if (interfaceName != null) {
+                    if (!intf.getName().equalsIgnoreCase(interfaceName)) continue;
+                }
+                byte[] mac = intf.getHardwareAddress();
+                if (mac==null) return "";
+                StringBuilder buf = new StringBuilder();
+                for (int idx=0; idx<mac.length; idx++)
+                    buf.append(String.format("%02X:", mac[idx]));
+                if (buf.length()>0) buf.deleteCharAt(buf.length()-1);
+                return buf.toString();
+            }
+        } catch (Exception ex) { Log.d(Constants.LOG_TAG_HOME, ex.getMessage());}
+        return "";
     }
 }

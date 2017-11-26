@@ -25,22 +25,29 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.Geofence;
+import com.google.android.gms.location.GeofenceStatusCodes;
 import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.oohana.R;
 import com.oohana.api.GeofenceList;
+import com.oohana.api.LogBody;
 import com.oohana.api.RetrofitService;
+import com.oohana.api.SyncServerResult;
 import com.oohana.database.ServerGeofence;
+import com.oohana.database.TriggeredLogs;
 import com.oohana.helpers.Alarms;
 import com.oohana.helpers.Constants;
 import com.oohana.helpers.FirebaseDispatchers;
 import com.oohana.helpers.PermissionIntent;
+import com.oohana.helpers.SyncLogsToServer;
 import com.oohana.services.GeofenceTriggeredReceiver;
 import com.oohana.services.LocationUpdatesService;
 
+import java.net.NetworkInterface;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import retrofit2.Call;
@@ -94,7 +101,7 @@ public class HomePresenter implements HomeContract.HomePresenterToModel, HomeCon
         fd.scheduleJob(Constants.SYNC_LOGS_TAG, true, Constants.SYNC_LOGS_TIME_MIN, true);
 
         fetchGeofencesFromServer();
-        Log.d(Constants.LOG_TAG_HOME, Integer.toString(homeModel.getServerGeofenceCount()));
+        if(homeModel.getLogCount() > 0 && Constants.isInternetAvailable(act.getApplicationContext())) syncLogsToServerAsync();
         if(homeModel.getServerGeofenceCount() > 0){
             connectToGoogleApi();
         }
@@ -119,6 +126,7 @@ public class HomePresenter implements HomeContract.HomePresenterToModel, HomeCon
     @Override
     public void registerReceiverToBroadcast(BroadcastReceiver receiver){
         LocalBroadcastManager.getInstance(act).registerReceiver(receiver, new IntentFilter(Constants.ACTION_UPDATE_LOC_UI));
+        act.registerReceiver(receiver, new IntentFilter());
     }
 
 
@@ -162,6 +170,12 @@ public class HomePresenter implements HomeContract.HomePresenterToModel, HomeCon
             }
         });
     }
+
+    @Override
+    public void syncLogsToServerAsync() {
+        SyncLogsToServer.syncLogs(act.getApplicationContext(), getService, homeModel);
+    }
+
 
     //Connect to Google Play services
     public void connectToGoogleApi() {
@@ -266,7 +280,12 @@ public class HomePresenter implements HomeContract.HomePresenterToModel, HomeCon
 
     @Override
     public void unregisterReceiver(BroadcastReceiver receiver) {
-        LocalBroadcastManager.getInstance(act).unregisterReceiver(receiver);
+        try {
+            LocalBroadcastManager.getInstance(act).unregisterReceiver(receiver);
+            act.unregisterReceiver(receiver);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -278,8 +297,9 @@ public class HomePresenter implements HomeContract.HomePresenterToModel, HomeCon
     //Geofence methods
     @Override
     public void startGeofencing() {
-        Log.d(Constants.LOG_TAG_HOME, "Starting geofencing . . .");
+        removeAllGeofences();
         ArrayList<Geofence> gL = homeModel.getNearestStoredGeofences();
+        Log.d(Constants.LOG_TAG_HOME, "Starting geofencing . . . " + gL.size() + " Geofences");
         addToGeofencingRequest(gL);
         activateGeofencingApi();
     }
@@ -302,6 +322,20 @@ public class HomePresenter implements HomeContract.HomePresenterToModel, HomeCon
             PendingIntent geofencePendingIntent = PendingIntent.getBroadcast(act.getApplicationContext(), Constants.GEOFENCE_PENDING_INTENT_ID,
                     geofenceIntent, PendingIntent.FLAG_UPDATE_CURRENT);
             LocationServices.GeofencingApi.removeGeofences(googleApiClient, geofencePendingIntent);
+        }
+    }
+
+    @Override
+    public void gpsOffAction() {
+        if(googleApiClient != null && googleApiClient.isConnected()) {
+            Intent geofenceIntent = new Intent(act.getApplicationContext(), GeofenceTriggeredReceiver.class);
+            geofenceIntent.setAction(Constants.ACTION_GEOFENCE_TRIGGERED);
+            PendingIntent geofencePendingIntent = PendingIntent.getBroadcast(act.getApplicationContext(), Constants.GEOFENCE_PENDING_INTENT_ID,
+                    geofenceIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            LocationServices.GeofencingApi.removeGeofences(googleApiClient, geofencePendingIntent);
+            googleApiClient = null;
+        }else if(googleApiClient != null){
+            googleApiClient = null;
         }
     }
 
@@ -334,4 +368,18 @@ public class HomePresenter implements HomeContract.HomePresenterToModel, HomeCon
                     });
         }
     }
+
+    private String getErrorString(int errorCode) {
+        switch (errorCode) {
+            case GeofenceStatusCodes.GEOFENCE_NOT_AVAILABLE:
+                return "GeoFence not available";
+            case GeofenceStatusCodes.GEOFENCE_TOO_MANY_GEOFENCES:
+                return "Too many GeoFences";
+            case GeofenceStatusCodes.GEOFENCE_TOO_MANY_PENDING_INTENTS:
+                return "Too many pending intents";
+            default:
+                return "Unknown error.";
+        }
+    }
+
 }

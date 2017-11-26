@@ -33,7 +33,6 @@ public class FirebaseDispatchers {
                     .setTrigger(Trigger.executionWindow(executionWindow, executionWindow))
                     .setReplaceCurrent(isReplacingCurrent)
                     .setRetryStrategy(RetryStrategy.DEFAULT_EXPONENTIAL)
-                    .setConstraints(Constraint.ON_ANY_NETWORK)
                     .build();
         }else{
             myJob = dispatcher.newJobBuilder()
@@ -43,7 +42,6 @@ public class FirebaseDispatchers {
                     .setLifetime(Lifetime.UNTIL_NEXT_BOOT)
                     .setReplaceCurrent(isReplacingCurrent)
                     .setRetryStrategy(RetryStrategy.DEFAULT_EXPONENTIAL)
-                    .setConstraints(Constraint.ON_ANY_NETWORK)
                     .build();
         }
 
