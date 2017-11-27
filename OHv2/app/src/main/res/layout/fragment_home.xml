@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/home_bg_color"
+    android:padding="@dimen/default_parent_padding"
+    tools:context="com.oohana.home.HomeActivity">
+    <FrameLayout
+        android:id="@+id/sync_buttons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <Button
+            android:id="@+id/sync_logs_button"
+            android:onClick="syncLogs"
+            style="@style/AppButtonStyle"
+            android:layout_width="@dimen/home_button_view_logs_width_dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:text="SYNC LOGS" />
+
+        <Button
+            android:id="@+id/fetch_geo_button"
+            android:onClick="fetchGeo"
+            style="@style/AppButtonStyle"
+            android:layout_width="@dimen/home_button_view_logs_width_dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:textSize="12dp"
+            android:text="FETCH GEOFENCES" />
+
+
+    </FrameLayout>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:layout_below="@+id/sync_buttons"
+        >
+    <LinearLayout
+        android:orientation="vertical"
+        android:id="@+id/info"
+        android:layout_centerHorizontal="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/home_content_bg"
+        android:padding="@dimen/home_padding">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/home_content_header_text_color"
+            android:textStyle="bold"
+            android:textSize="@dimen/home_content_header_size_sp"
+            android:layout_margin="@dimen/home_header_margin"
+            android:gravity="center"
+            android:layout_gravity="center"
+            android:text="Current Location"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/home_body_margin"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:gravity="center"
+                android:text="Latitude"
+                android:textColor="@color/home_content_body_text_color"
+                android:textSize="@dimen/home_content_body_size_sp"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/locationLat"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:gravity="center"
+                android:textColor="@color/home_content_body_text_color"
+                android:textSize="@dimen/home_content_body_size_sp"/>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/home_body_margin"
+            android:orientation="vertical">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:gravity="center"
+                android:textColor="@color/home_content_body_text_color"
+                android:textStyle="bold"
+                android:textSize="@dimen/home_content_body_size_sp"
+                android:text="Longitude"/>
+            <TextView
+                android:id="@+id/locationLng"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:gravity="center"
+                android:textColor="@color/home_content_body_text_color"
+                android:textSize="@dimen/home_content_body_size_sp"/>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/home_body_margin"
+            android:orientation="vertical">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:gravity="center"
+                android:textColor="@color/home_content_body_text_color"
+                android:textStyle="bold"
+                android:textSize="@dimen/home_content_body_size_sp"
+                android:text="Last updated"/>
+            <TextView
+                android:id="@+id/updatedTime"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:gravity="center"
+                android:textColor="@color/home_content_body_text_color"
+                android:textSize="@dimen/home_content_body_size_sp"/>
+        </LinearLayout>
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/home_content_header_text_color"
+            android:textStyle="bold"
+            android:textSize="@dimen/home_content_header_size_sp"
+            android:layout_marginLeft="@dimen/home_header_margin"
+            android:layout_marginRight="@dimen/home_header_margin"
+            android:layout_marginTop="@dimen/home_header_margin"
+            android:layout_gravity="center_horizontal"
+            android:gravity="center"
+            android:text="Geofences Active"/>
+        <TextView
+            android:id="@+id/geofencesActive"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:gravity="center"
+            android:textColor="@color/home_content_body_text_color"
+            android:textSize="@dimen/home_content_body_size_sp"/>
+    </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/buttons"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/info"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="20dp"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/view_logs_button"
+                style="@style/AppButtonStyle"
+                android:layout_width="@dimen/home_button_view_logs_width_dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:onClick="viewLogs"
+                android:text="VIEW LOGS" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="5dp"
+                    android:gravity="center"
+                    android:text="Logs recorded:"
+                    android:textColor="@color/home_content_body_text_color"
+                    android:textSize="@dimen/home_sub_size" />
+
+                <TextView
+                    android:id="@+id/log_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginLeft="2dp"
+                    android:layout_marginTop="5dp"
+                    android:gravity="center"
+                    android:textColor="@color/home_content_body_text_color"
+                    android:textSize="@dimen/home_sub_size" />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/view_geofences_button"
+                style="@style/AppButtonStyle"
+                android:layout_width="@dimen/home_button_view_geo_width_dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="10dp"
+                android:onClick="viewGeo"
+                android:text="VIEW GEOFENCES" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="5dp"
+                    android:gravity="center"
+                    android:text="Total Geofences:"
+                    android:textColor="@color/home_content_body_text_color"
+                    android:textSize="@dimen/home_sub_size" />
+
+                <TextView
+                    android:id="@+id/geo_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginLeft="2dp"
+                    android:layout_marginTop="5dp"
+                    android:gravity="center"
+                    android:textColor="@color/home_content_body_text_color"
+                    android:textSize="@dimen/home_sub_size" />
+            </LinearLayout>
+        </LinearLayout>
+    </RelativeLayout>
+
+</RelativeLayout>

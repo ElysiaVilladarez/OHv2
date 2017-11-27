@@ -40,13 +40,28 @@ public class SyncLogsService extends JobService {
                         .build();
 
                 RetrofitService getService = retrofitApi.create(RetrofitService.class);
-                SyncLogsToServer.syncLogs(getApplicationContext(), getService, homeModel);
+                SyncLogsToServer.syncLogs(getApplicationContext(), getService, homeModel, false);
             }else{
                 Log.d(Constants.LOG_TAG_JOB, "No internet connection. Attempt to sync is true!");
                 SharedPreferences prefs = getSharedPreferences(Constants.PREFS_NAME, MODE_PRIVATE);
                 prefs.edit().putBoolean(Constants.SHARED_PREF_HAS_SYNCED_BEFORE_KEY, true).apply();
             }
 
+        }else if(job.getTag().equals(Constants.FETCH_LOGS_TAG)){
+            if(Constants.isInternetAvailable(getApplicationContext())){
+                Log.d(Constants.LOG_TAG_JOB, "Fetching geofences . . .");
+                Retrofit retrofitApi = new Retrofit.Builder()
+                        .baseUrl(Constants.BASE_URL)
+                        .addConverterFactory(GsonConverterFactory.create())
+                        .build();
+
+                RetrofitService getService = retrofitApi.create(RetrofitService.class);
+                SyncLogsToServer.fetchGeofencesFromServer(getApplicationContext(), getService, homeModel, false);
+            }else{
+                Log.d(Constants.LOG_TAG_JOB, "No internet connection. Attempt to sync is true!");
+                SharedPreferences prefs = getSharedPreferences(Constants.PREFS_NAME, MODE_PRIVATE);
+                prefs.edit().putBoolean(Constants.SHARED_PREF_HAS_FETCHED_BEFORE_KEY, true).apply();
+            }
         }
         return false;
     }

@@ -64,6 +64,8 @@
             <intent-filter>
                 <action android:name="action.ACTION_GPS_ON" />
                 <action android:name="action.ACTION_GPS_OFF" />
+                <action android:name="action.ACTION_UPDATE_LOG_COUNT" />
+                <action android:name="action.ACTION_UPDATE_GEO_COUNT" />
             </intent-filter>
         </receiver>
 

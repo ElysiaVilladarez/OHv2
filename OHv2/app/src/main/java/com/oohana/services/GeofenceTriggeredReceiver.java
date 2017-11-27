@@ -61,6 +61,10 @@ public class GeofenceTriggeredReceiver extends BroadcastReceiver {
                 List<Geofence> triggeringGeofences = geofencingEvent.getTriggeringGeofences();
                 homeModel.addLogs(geoFenceTransition, triggeringGeofences);
                 Log.d(Constants.LOG_TAG_RECEIVER, "Status: " + geoFenceTransition + " ~ " + TextUtils.join(", ", triggeringGeofences));
+                Intent trigIntent = new Intent();
+                trigIntent.setAction(Constants.ACTION_UPDATE_LOG_COUNT);
+                trigIntent.putExtra(Constants.LOG_COUNT_KEY, homeModel.getLogCount());
+                context.sendBroadcast(trigIntent);
             }
         }
         if(Constants.ACTION_PROVIDERS_CHANGED.equals(intent.getAction())){
@@ -82,7 +86,7 @@ public class GeofenceTriggeredReceiver extends BroadcastReceiver {
                 || ConnectivityManager.CONNECTIVITY_ACTION.equals(intent.getAction())){
             NetworkInfo ni = (NetworkInfo) intent.getExtras().get(
                     ConnectivityManager.EXTRA_NETWORK_INFO);
-            if (ni != null && ni.getState() == NetworkInfo.State.CONNECTED) {
+            if (ni != null && ni.getState() == NetworkInfo.State.CONNECTED && homeModel.getLogCount() > 0) {
                 Log.d(Constants.LOG_TAG_RECEIVER, "There is internet connection!");
                 SharedPreferences pref = context.getSharedPreferences(Constants.PREFS_NAME, Context.MODE_PRIVATE);
                 boolean hasSyncedBefore = pref.getBoolean(Constants.SHARED_PREF_HAS_SYNCED_BEFORE_KEY, true);
@@ -94,19 +98,23 @@ public class GeofenceTriggeredReceiver extends BroadcastReceiver {
                             .build();
 
                     RetrofitService getService = retrofitApi.create(RetrofitService.class);
-                    SyncLogsToServer.syncLogs(getService, homeModel);
+                    SyncLogsToServer.syncLogs(context, getService, homeModel, false);
+                }
+                boolean hasFetchedBefore = pref.getBoolean(Constants.SHARED_PREF_HAS_FETCHED_BEFORE_KEY, true);
+                if(hasFetchedBefore) {
+                    Log.d(Constants.LOG_TAG_RECEIVER, "Fetch has been attempted before! Fetch now");
+                    Retrofit retrofitApi = new Retrofit.Builder()
+                            .baseUrl(Constants.BASE_URL)
+                            .addConverterFactory(GsonConverterFactory.create())
+                            .build();
+
+                    RetrofitService getService = retrofitApi.create(RetrofitService.class);
+                    SyncLogsToServer.fetchGeofencesFromServer(context, getService, homeModel, false);
                 }
             } else{
                 Log.d(Constants.LOG_TAG_RECEIVER, "There is no internet connection!");
             }
         }
-
-        if(Constants.ACTION_FETCH_GEOFENCES.equals(intent.getAction())){
-            Log.d(Constants.LOG_TAG_RECEIVER, "Fetching newly added geofences from server . . .");
-//            homePresenter.fetchGeofencesFromServer();
-//            homePresenter.connectToGoogleApi();
-        }
-
     }
     private String getErrorString(int errorCode) {
         switch (errorCode) {

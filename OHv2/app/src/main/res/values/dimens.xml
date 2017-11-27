@@ -1,4 +1,5 @@
 <resources>
+    <dimen name="default_parent_padding">16dp</dimen>
     <dimen name="dialog_rounded_corners_dp">20dp</dimen>
     <dimen name="dialog_text_size_sp">18sp</dimen>
     <dimen name="dialog_textview_minheight_size_dp">50dp</dimen>
@@ -8,6 +9,9 @@
     <dimen name="button_rounded_corners_dp">7dp</dimen>
     <dimen name="button_height_dp">35dp</dimen>
 
+    <dimen name="home_button_view_logs_width_dp">100dp</dimen>
+    <dimen name="home_button_view_geo_width_dp">140dp</dimen>
+
     <dimen name="home_content_rounded_corners_dp">20dp</dimen>
     <dimen name="home_content_border_width_dp">3dp</dimen>
     <dimen name="home_content_header_size_sp">21sp</dimen>
@@ -15,5 +19,7 @@
     <dimen name="home_padding">13dp</dimen>
     <dimen name="home_header_margin">8dp</dimen>
     <dimen name="home_body_margin">6dp</dimen>
+    <dimen name="home_sub_size">12sp</dimen>
+    <dimen name="text_margin">16dp</dimen>
 
 </resources>

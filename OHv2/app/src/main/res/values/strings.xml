@@ -7,4 +7,9 @@
     <string name="switch_to_high_mes">"Kindly switch GPS settings to High Accuracy."</string>
     <string name="confirm_stop_logs_mes">"Are you sure you want to stop the logs?"</string>
     <string name="connect_to_internet_mes">"OOHANA needs to get the geofences from the server. Kindly connect to the internet."</string>
+    <string name="connect_to_internet_mes2">"Kindly connect to the internet."</string>
+    <string name="toast_sync_success">Logs have been successfully synced to server!</string>
+    <string name="toast_sync_fail">Sync failed: </string>
+    <string name="toast_fetch_success">Geofences have been successfully synced to server!</string>
+    <string name="toast_fetch_fail">Fetching geofences failed. </string>
 </resources>

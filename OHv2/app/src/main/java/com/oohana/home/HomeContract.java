@@ -23,6 +23,8 @@ public interface HomeContract {
         Activity getActivity();
         void setLatLng(String lat, String lng);
         void setGeofencesActive(String geofencesActive);
+        void setGeofencesCount(String geofCount);
+        void setLogCount(String logsCount);
         void askToTurnOnLocation(String message);
         void askToConnectToInternet(String message);
         void permissionDeniedDialog(String mes);
@@ -37,8 +39,8 @@ public interface HomeContract {
         void turnOnLocation();
         void checkLocationProvider();
         void permissionDenied();
-        void fetchGeofencesFromServer();
-        void syncLogsToServerAsync();
+        void fetchGeofencesFromServer(boolean showToasts);
+        void syncLogsToServerAsync(boolean showToasts);
         void connectToGoogleApi();
         void launchLocationSettings();
         void stopJob(String tag);

@@ -99,9 +99,13 @@ public class HomePresenter implements HomeContract.HomePresenterToModel, HomeCon
     @Override
     public void setUpResourcesAndServices(Context c) {
         fd.scheduleJob(Constants.SYNC_LOGS_TAG, true, Constants.SYNC_LOGS_TIME_MIN, true);
+        fd.scheduleJob(Constants.FETCH_LOGS_TAG, true, Constants.FETCH_LOGS_TIME_MIN, true);
 
-        fetchGeofencesFromServer();
-        if(homeModel.getLogCount() > 0 && Constants.isInternetAvailable(act.getApplicationContext())) syncLogsToServerAsync();
+        homeView.setLogCount(Integer.toString(homeModel.getLogCount()));
+        homeView.setGeofencesCount(Integer.toString(homeModel.getServerGeofenceCount()));
+
+        fetchGeofencesFromServer(false);
+        if(homeModel.getLogCount() > 0 && Constants.isInternetAvailable(act.getApplicationContext())) syncLogsToServerAsync(false);
         if(homeModel.getServerGeofenceCount() > 0){
             connectToGoogleApi();
         }
@@ -119,7 +123,7 @@ public class HomePresenter implements HomeContract.HomePresenterToModel, HomeCon
         else if(!Constants.isInternetAvailable(act.getApplicationContext())){
             homeView.askToConnectToInternet(act.getString(R.string.connect_to_internet_mes));
         } else if(homeModel.getServerGeofenceCount() <= 0){
-            fetchGeofencesFromServer();
+            fetchGeofencesFromServer(false);
         }
     }
 
@@ -151,29 +155,43 @@ public class HomePresenter implements HomeContract.HomePresenterToModel, HomeCon
     }
 
     @Override
-    public void fetchGeofencesFromServer() {
+    public void fetchGeofencesFromServer(final boolean showToasts) {
         Call<GeofenceList> fetch = getService.geofenceList();
         fetch.enqueue(new Callback<GeofenceList>() {
             @Override
             public void onResponse(Call<GeofenceList> call, Response<GeofenceList> response) {
                 Log.d(Constants.LOG_TAG_HOME, "Getting geofence list successful: " + response.body().getGeofenceList.size() + " items");
+                if(showToasts){
+                    Toast.makeText(act, act.getString(R.string.toast_fetch_success), Toast.LENGTH_SHORT).show();
+                }
                 List<ServerGeofence> result = response.body().getGeofenceList;
                 homeModel.deleteGeofences();
                 homeModel.addServerGeofences(result);
-                homeView.setGeofencesActive(Integer.toString(result.size()));
+                homeView.setGeofencesCount(Integer.toString(result.size()));
                 connectToGoogleApi();
+
+                Intent trigIntent = new Intent();
+                trigIntent.setAction(Constants.ACTION_UPDATE_GEO_COUNT);
+                trigIntent.putExtra(Constants.GEOF_COUNT_KEY, homeModel.getServerGeofenceCount());
+                act.getApplicationContext().sendBroadcast(trigIntent);
             }
 
             @Override
             public void onFailure(Call<GeofenceList> call, Throwable t) {
                 Log.d(Constants.LOG_TAG_HOME, "Getting geofence list fail: " + t.toString());
+                if(showToasts){
+                    if(!Constants.isInternetAvailable(act))
+                        Toast.makeText(act, act.getString(R.string.toast_fetch_fail) + act.getString(R.string.connect_to_internet_mes2), Toast.LENGTH_LONG).show();
+                    else
+                        Toast.makeText(act, act.getString(R.string.toast_fetch_fail) + t.toString(), Toast.LENGTH_LONG).show();
+                }
             }
         });
     }
 
     @Override
-    public void syncLogsToServerAsync() {
-        SyncLogsToServer.syncLogs(act.getApplicationContext(), getService, homeModel);
+    public void syncLogsToServerAsync(boolean showToasts) {
+        SyncLogsToServer.syncLogs(act.getApplicationContext(), getService, homeModel, showToasts);
     }
 
 
@@ -187,7 +205,6 @@ public class HomePresenter implements HomeContract.HomePresenterToModel, HomeCon
                         public void onConnected(@Nullable Bundle bundle) {
                             Log.d(Constants.LOG_TAG_HOME, "Google API connected!");
                             if (homeModel.getServerGeofenceCount() > 0) {
-                                homeView.setGeofencesActive(Integer.toString(homeModel.getServerGeofenceCount()));
                                 startLocationUpdates();
                                 startGeofencing();
                             }
@@ -300,6 +317,7 @@ public class HomePresenter implements HomeContract.HomePresenterToModel, HomeCon
         removeAllGeofences();
         ArrayList<Geofence> gL = homeModel.getNearestStoredGeofences();
         Log.d(Constants.LOG_TAG_HOME, "Starting geofencing . . . " + gL.size() + " Geofences");
+        homeView.setGeofencesActive(Integer.toString(gL.size()));
         addToGeofencingRequest(gL);
         activateGeofencingApi();
     }

@@ -13,6 +13,9 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -23,12 +26,13 @@ import android.widget.TextView;
 import com.oohana.R;
 import com.oohana.helpers.Constants;
 import com.oohana.helpers.DialogConfirmCreator;
+import com.oohana.home.fragments.HomeFragment;
 
 import java.util.Calendar;
 
 public class HomeActivity extends AppCompatActivity implements HomeContract.HomeViewToPresenter {
     private static HomeContract.HomePresenterToView homePresenter;
-    private static TextView latText, lngText, lastUpdated, geofenceNumText;
+    private static TextView latText, lngText, lastUpdated, geofenceNumText, logCount, geofencesCount;
     private Dialog alertDialogs;
     private TextView alertDialogMes;
     private Button alertOkButton;
@@ -41,7 +45,15 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.Home
         setContentView(R.layout.activity_home);
         homePresenter = new HomePresenter(this);
 
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+        Fragment homeFragment = HomeFragment.newInstance();
+        fragmentTransaction.add(R.id.fragment_container, homeFragment);
+        fragmentTransaction.commit();
+
         prefs = getSharedPreferences(Constants.PREFS_NAME, MODE_PRIVATE);
+
         alertDialogs = new Dialog(this);
         alertDialogs.requestWindowFeature(Window.FEATURE_NO_TITLE);
         alertDialogs.setContentView(R.layout.dialog_general_template);
@@ -51,13 +63,22 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.Home
         alertDialogMes = (TextView)alertDialogs.findViewById(R.id.message);
         alertOkButton = (Button)alertDialogs.findViewById(R.id.ok_button);
 
+        receiver = new LocationUpdateUIReceiver();
+        homePresenter.registerReceiverToBroadcast(receiver);
+
+
+    }
+    @Override
+    public void onStart(){
+        super.onStart();
+
+        //Home Fragment
         latText = (TextView)findViewById(R.id.locationLat);
         lngText = (TextView)findViewById(R.id.locationLng);
         lastUpdated = (TextView)findViewById(R.id.updatedTime);
         geofenceNumText = (TextView)findViewById(R.id.geofencesActive);
-
-        receiver = new LocationUpdateUIReceiver();
-        homePresenter.registerReceiverToBroadcast(receiver);
+        logCount = (TextView)findViewById(R.id.log_count);
+        geofencesCount = (TextView)findViewById(R.id.geo_count);
 
         Intent intent = getIntent();
         if(intent != null) {
@@ -103,6 +124,7 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.Home
         return this;
     }
 
+    //Set texts
     @Override
     public void setLatLng(String lat, String lng) {
         latText.setText(lat);
@@ -110,16 +132,48 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.Home
         lastUpdated.setText(Constants.LAST_UPDATED_FORMAT.format(Calendar.getInstance().getTime()));
     }
 
-
     public static void setLatLngStatic(String lat, String lng) {
         latText.setText(lat);
         lngText.setText(lng);
         lastUpdated.setText(Constants.LAST_UPDATED_FORMAT.format(Calendar.getInstance().getTime()));
     }
 
+    public static void setGeofencesCountStatic(String geofCount) {
+        geofencesCount.setText(geofCount);
+    }
+
+    @Override
+    public void setGeofencesCount(String geofCount){
+        geofencesCount.setText(geofCount);
+    }
+
+    public static void setLogCountStatic(String logsCount) {
+        logCount.setText(logsCount);
+    }
+    @Override
+    public void setLogCount(String logsCount) {
+        logCount.setText(logsCount);
+    }
+
     @Override
     public void setGeofencesActive(String geofencesActive) {
         geofenceNumText.setText(geofencesActive);
+    }
+
+    //Button clicks
+    public void syncLogs(View v){
+        homePresenter.syncLogsToServerAsync(true);
+    }
+
+    public void fetchGeo(View v){
+        homePresenter.fetchGeofencesFromServer(true);
+    }
+    public void viewLogs(View v){
+
+    }
+
+    public void viewGeo(View v){
+
     }
 
     @Override
@@ -285,6 +339,13 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.Home
                     Log.d(Constants.LOG_TAG_RECEIVER, "Removing geofences . . .");
                     homePresenter.gpsOffAction();
                 }
+            } else if(Constants.ACTION_UPDATE_LOG_COUNT.equals(intent.getAction())){
+                Log.d(Constants.LOG_TAG_RECEIVER, "Updating log count . . .");
+                setLogCountStatic(Integer.toString(intent.getIntExtra(Constants.LOG_COUNT_KEY, 0)));
+            } else if(Constants.ACTION_UPDATE_GEO_COUNT.equals(intent.getAction())){
+                Log.d(Constants.LOG_TAG_RECEIVER, "Updating geofences count . . .");
+                setGeofencesCountStatic(Integer.toString(intent.getIntExtra(Constants.GEOF_COUNT_KEY, 0)));
+                homePresenter.connectToGoogleApi();
             }
         }
     }

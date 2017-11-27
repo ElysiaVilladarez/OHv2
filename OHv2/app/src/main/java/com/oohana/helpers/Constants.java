@@ -57,18 +57,16 @@ public class Constants {
     public static final int FETCH_PENDING_INTENT_ID = 240;
 
     public static final int GEOFENCE_INITIAL_TRIGGER = GeofencingRequest.INITIAL_TRIGGER_ENTER;
-    //public static final long SYNC_LOGS_TIME = 1000 * 60 * 60 * 2;
-    public static final long FETCH_LOGS_TIME = 1000 * 60 * 25;
 
     public final static String SYNC_LOGS_TAG = "SYNC_LOGS_TAG";
     public static final int SYNC_LOGS_TIME_MIN = 60 * 60 * 2; //2 hours
-    public static final int FETCH_LOGS_TIME_MIN = 60 * 25;
+    public final static String FETCH_LOGS_TAG = "FETCH_LOGS_TAG";
+    public static final int FETCH_LOGS_TIME_MIN = 60 * 60 * 5; // 5 hours
 
     public static final String SHARED_PREF_HAS_SYNCED_BEFORE_KEY = "HAS_ATTEMPTED_SYNCED";
     public static final String SHARED_PREF_HAS_FETCHED_BEFORE_KEY = "HAS_ATTEMPTED_FETCHING";
 
     public static final String ACTION_GEOFENCE_TRIGGERED = "com.oohana.ohv2.ACTION_GEOFENCE_TRIGGERED";
-    public static final String ACTION_SYNC_LOGS = "com.oohana.ohv2.ACTION_SYNC_LOGS";
     public static final String ACTION_FETCH_GEOFENCES ="com.oohana.ohv2.ACTION_FETCH_GEOFENCES";
     public final static String ACTION_UPDATE_LOC_UI = "com.oohana.ohv2.ACTION_UPDATE_LOC_UI";
     public final static String ACTION_PROVIDERS_CHANGED = "android.location.PROVIDERS_CHANGED";
@@ -78,6 +76,11 @@ public class Constants {
     public final static String ACTION_WIFI_STATE_CHANGED = "android.net.wifi.WIFI_STATE_CHANGED";
     public final static String ACTION_STATE_CHANGED = "android.net.wifi.STATE_CHANGE";
 
+    public final static String ACTION_UPDATE_LOG_COUNT = "action.ACTION_UPDATE_LOG_COUNT";
+    public final static String ACTION_UPDATE_GEO_COUNT = "action.ACTION_UPDATE_GEO_COUNT";
+
+    public final static String LOG_COUNT_KEY = "LOG_COUNT_KEY";
+    public final static String GEOF_COUNT_KEY = "GEOF_COUNT_KEY";
 
     public final static String NOTIFICATION_TITLE = "OOHANA";
     public final static String NOTIFICATION_CONTENT_TEXT = "OOHANA is logging your location . . .";
