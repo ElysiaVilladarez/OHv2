@@ -276,7 +276,7 @@ public class HomePresenter implements HomeContract.HomePresenterToModel, HomeCon
                 }
 //                LocationServices.FusedLocationApi.requestLocationUpdates(
 //                        googleApiClient, locationRequest, this);
-                PendingIntent locationUpdatesPendingIntent = PendingIntent.getService(act.getApplicationContext(), Constants.FETCH_PENDING_INTENT_ID,
+                PendingIntent locationUpdatesPendingIntent = PendingIntent.getService(act.getApplicationContext(), Constants.LOC_UPDATES_PENDING_INTENT_ID,
                         locationUpdatesIntent, PendingIntent.FLAG_UPDATE_CURRENT);
                 LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, locationUpdatesPendingIntent);
             }
@@ -287,7 +287,7 @@ public class HomePresenter implements HomeContract.HomePresenterToModel, HomeCon
     public void stopLocationUpdates() {
         if(googleApiClient != null) {
             Intent locationUpdatesIntent = new Intent(act, LocationUpdatesService.class);
-            PendingIntent locationUpdatesPendingIntent = PendingIntent.getService(act.getApplicationContext(), Constants.FETCH_PENDING_INTENT_ID,
+            PendingIntent locationUpdatesPendingIntent = PendingIntent.getService(act.getApplicationContext(), Constants.LOC_UPDATES_PENDING_INTENT_ID,
                     locationUpdatesIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
             LocationServices.FusedLocationApi.removeLocationUpdates(

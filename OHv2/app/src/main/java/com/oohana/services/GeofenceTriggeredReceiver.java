@@ -89,7 +89,7 @@ public class GeofenceTriggeredReceiver extends BroadcastReceiver {
             if (ni != null && ni.getState() == NetworkInfo.State.CONNECTED && homeModel.getLogCount() > 0) {
                 Log.d(Constants.LOG_TAG_RECEIVER, "There is internet connection!");
                 SharedPreferences pref = context.getSharedPreferences(Constants.PREFS_NAME, Context.MODE_PRIVATE);
-                boolean hasSyncedBefore = pref.getBoolean(Constants.SHARED_PREF_HAS_SYNCED_BEFORE_KEY, true);
+                boolean hasSyncedBefore = pref.getBoolean(Constants.SHARED_PREF_HAS_SYNCED_BEFORE_KEY, false);
                 if(hasSyncedBefore) {
                     Log.d(Constants.LOG_TAG_RECEIVER, "Syncing has been attempted before! Sync now");
                     Retrofit retrofitApi = new Retrofit.Builder()
@@ -100,7 +100,8 @@ public class GeofenceTriggeredReceiver extends BroadcastReceiver {
                     RetrofitService getService = retrofitApi.create(RetrofitService.class);
                     SyncLogsToServer.syncLogs(context, getService, homeModel, false);
                 }
-                boolean hasFetchedBefore = pref.getBoolean(Constants.SHARED_PREF_HAS_FETCHED_BEFORE_KEY, true);
+
+                boolean hasFetchedBefore = pref.getBoolean(Constants.SHARED_PREF_HAS_FETCHED_BEFORE_KEY, false);
                 if(hasFetchedBefore) {
                     Log.d(Constants.LOG_TAG_RECEIVER, "Fetch has been attempted before! Fetch now");
                     Retrofit retrofitApi = new Retrofit.Builder()

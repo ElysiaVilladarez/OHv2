@@ -95,6 +95,9 @@ public class SyncLogsToServer {
                     Toast.makeText(c, c.getString(R.string.toast_fetch_success), Toast.LENGTH_SHORT).show();
                 }
 
+                SharedPreferences prefs = c.getSharedPreferences(Constants.PREFS_NAME, MODE_PRIVATE);
+                prefs.edit().putBoolean(Constants.SHARED_PREF_HAS_FETCHED_BEFORE_KEY, false).apply();
+
                 Intent trigIntent = new Intent();
                 trigIntent.setAction(Constants.ACTION_UPDATE_GEO_COUNT);
                 trigIntent.putExtra(Constants.GEOF_COUNT_KEY, homeModel.getServerGeofenceCount());
@@ -104,6 +107,10 @@ public class SyncLogsToServer {
             @Override
             public void onFailure(Call<GeofenceList> call, Throwable t) {
                 Log.d(Constants.LOG_TAG_HOME, "Getting geofence list fail: " + t.toString());
+
+                SharedPreferences prefs = c.getSharedPreferences(Constants.PREFS_NAME, MODE_PRIVATE);
+                prefs.edit().putBoolean(Constants.SHARED_PREF_HAS_FETCHED_BEFORE_KEY, true).apply();
+
                 if(showToasts){
                     if(!Constants.isInternetAvailable(c))
                         Toast.makeText(c, c.getString(R.string.toast_fetch_fail) + c.getString(R.string.connect_to_internet_mes2), Toast.LENGTH_LONG).show();

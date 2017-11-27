@@ -34,7 +34,7 @@ public class FirebaseDispatchers {
                     .setReplaceCurrent(isReplacingCurrent)
                     .setRetryStrategy(RetryStrategy.DEFAULT_EXPONENTIAL)
                     .build();
-        }else{
+        } else{
             myJob = dispatcher.newJobBuilder()
                     .setService(SyncLogsService.class)
                     .setTag(tag)

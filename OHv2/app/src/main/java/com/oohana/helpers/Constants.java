@@ -53,8 +53,7 @@ public class Constants {
     public static final int GEOFENCE_RADIUS_DEFAULT_VALUE = 5;
     public static final int GEOFENCE_LOITERING_DELAY = 1000 * 60 * 10;
     public static final int GEOFENCE_PENDING_INTENT_ID = 220;
-    public static final int SYNC_PENDING_INTENT_ID = 230;
-    public static final int FETCH_PENDING_INTENT_ID = 240;
+    public static final int LOC_UPDATES_PENDING_INTENT_ID = 240;
 
     public static final int GEOFENCE_INITIAL_TRIGGER = GeofencingRequest.INITIAL_TRIGGER_ENTER;
 
@@ -67,7 +66,6 @@ public class Constants {
     public static final String SHARED_PREF_HAS_FETCHED_BEFORE_KEY = "HAS_ATTEMPTED_FETCHING";
 
     public static final String ACTION_GEOFENCE_TRIGGERED = "com.oohana.ohv2.ACTION_GEOFENCE_TRIGGERED";
-    public static final String ACTION_FETCH_GEOFENCES ="com.oohana.ohv2.ACTION_FETCH_GEOFENCES";
     public final static String ACTION_UPDATE_LOC_UI = "com.oohana.ohv2.ACTION_UPDATE_LOC_UI";
     public final static String ACTION_PROVIDERS_CHANGED = "android.location.PROVIDERS_CHANGED";
     public final static String ACTION_STOP_SERVICE = "action.STOP_SERVICE";
